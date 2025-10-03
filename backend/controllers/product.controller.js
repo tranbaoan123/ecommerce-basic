@@ -1,3 +1,4 @@
+import { Order } from "../models/order.model.js";
 import { Product } from "../models/product.model.js";
 import APIFilter from "../utils/apiFilters.js";
 import { deleteFile, uploadFile } from "../utils/cloudinary.js";
@@ -26,7 +27,7 @@ export const getAllProducts = async (req, res) => {
 export const getProductById = async (req, res, next) => {
   try {
     const pid = req.params.id;
-    const product = await Product.findById(pid);
+    const product = await Product.findById(pid).populate("reviews.user");
     if (!product) return next(new ErrorHandler("Product Not Found", 404));
     return res.status(200).json({
       success: true,
@@ -151,10 +152,53 @@ export const createProductReview = async (req, res) => {
       .json({ success: false, message: "Internal Server Error" });
   }
 };
+// Delete Product Review
+export const deleteProductReview = async (req, res) => {
+  try {
+    const product = await Product.findById(req.query.productId);
+    if (!product)
+      return res
+        .status(400)
+        .json({ success: false, message: "Product Not Found" });
+
+    const reviews = product?.reviews?.filter(
+      (review) => review.id.toString() !== req?.query?.id.toString()
+    );
+    const numOfReviews = reviews.length;
+
+    const ratings =
+      numOfReviews === 0
+        ? 0
+        : product.reviews.reduce((acc, item) => item.rating + acc, 0) /
+          numOfReviews;
+    const data = await Product.findByIdAndUpdate(
+      req.query.productId,
+      {
+        reviews,
+        ratings,
+        numOfReviews,
+      },
+      { new: true }
+    );
+    await product.save({ validateBeforeSave: false });
+    return res.status(201).json({
+      success: true,
+      message: "Delete Review Product Successfully",
+      data,
+    });
+  } catch (error) {
+    console.log("Error ", error);
+    return res
+      .status(503)
+      .json({ success: false, message: "Internal Server Error" });
+  }
+};
 
 export const getProductReviews = async (req, res) => {
   try {
-    const product = await Product.findById(req.query.id);
+    const product = await Product.findById(req.query.id).populate(
+      "reviews.user"
+    );
     if (!product)
       return res
         .status(400)
@@ -230,6 +274,25 @@ export const deleteProductImage = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Deleted Product Image Successfully !",
+    });
+  } catch (error) {
+    console.log("Error ", error);
+    return res
+      .status(503)
+      .json({ success: false, message: "Internal Server Error" });
+  }
+};
+export const canReview = async (req, res) => {
+  try {
+    const pid = req.query.productId;
+    const orders = await Order.find({
+      user: req?.user?._id,
+      "orderItems.product": pid,
+    });
+    if (orders.length === 0) return res.status(400).json({ canReview: false });
+
+    return res.status(200).json({
+      canReview: true,
     });
   } catch (error) {
     console.log("Error ", error);

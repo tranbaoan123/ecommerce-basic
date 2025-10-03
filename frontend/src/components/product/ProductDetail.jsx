@@ -5,8 +5,10 @@ import { Rating } from "@smastrom/react-rating";
 import "@smastrom/react-rating/style.css";
 import Loader from "../layouts/Loader";
 import { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setCartItems } from "../../redux/features/cartSlice";
+import NewReview from "../reviews/NewReview";
+import ListReview from "../reviews/ListReview";
 const ProductDetail = () => {
   const params = useParams();
   const { data, isLoading } = useGetProductDetailsQuery(params?.id);
@@ -40,6 +42,7 @@ const ProductDetail = () => {
     };
     dispatch(setCartItems(cartItem));
   };
+  const { isAuthenticated } = useSelector((state) => state.auth);
   if (isLoading) <Loader />;
   return (
     <div className="row d-flex justify-content-around">
@@ -137,11 +140,15 @@ const ProductDetail = () => {
         <p id="product_seller mb-3">
           Sold by: <strong>{product?.seller}</strong>
         </p>
-
-        <div className="alert alert-danger my-5" type="alert">
-          Login to post your review.
-        </div>
+        {isAuthenticated ? (
+          <NewReview productId={product?._id} />
+        ) : (
+          <div className="alert alert-danger my-5" type="alert">
+            Login to post your review.
+          </div>
+        )}
       </div>
+      {product?.reviews.length > 0 && <ListReview reviews={product?.reviews} />}
     </div>
   );
 };

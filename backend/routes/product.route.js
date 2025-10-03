@@ -4,13 +4,16 @@ import {
   isAuthorizedRole,
 } from "../middleware/auth.middleware.js";
 import {
+  canReview,
   createProduct,
   createProductReview,
   deleteProduct,
   deleteProductImage,
+  deleteProductReview,
   getAllProducts,
   getAllProductsAdmin,
   getProductById,
+  getProductReviews,
   updateProduct,
   uploadProductImages,
 } from "../controllers/product.controller.js";
@@ -50,5 +53,11 @@ router.delete(
   deleteProduct
 );
 router.put("/products/review", [isAuthenticated], createProductReview);
-router.get("/products/reviews", [isAuthenticated], getProductById);
+router.get("/products/reviews", [isAuthenticated], getProductReviews);
+router.delete(
+  "/products/reviews",
+  [isAuthenticated, isAuthorizedRole("admin")],
+  deleteProductReview
+);
+router.get("/products/reviews/can-review", [isAuthenticated], canReview);
 export default router;
