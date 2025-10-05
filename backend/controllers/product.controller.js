@@ -11,9 +11,11 @@ export const getAllProducts = async (req, res) => {
     let products = await apiFilter.query;
     apiFilter.pagination(resPerPage);
     products = await apiFilter.query.clone();
+    const records = await Product.countDocuments();
     return res.status(200).json({
       success: true,
       message: "Get Products Successfully !",
+      records,
       data: products,
     });
   } catch (error) {

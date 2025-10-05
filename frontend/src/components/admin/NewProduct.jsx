@@ -10,7 +10,7 @@ const NewProduct = () => {
     name: "",
     description: "",
     price: "",
-    category: "",
+    category: PRODUCT_CATEGORIES[0],
     stock: "",
     seller: "",
   });
@@ -112,7 +112,6 @@ const NewProduct = () => {
                   name="category"
                   value={category}
                   onChange={handleOnChange}
-                  defaultValue={PRODUCT_CATEGORIES[0]}
                 >
                   {PRODUCT_CATEGORIES.map((category) => (
                     <option key={category} value={category}>

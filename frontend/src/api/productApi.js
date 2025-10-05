@@ -11,6 +11,7 @@ export const productApi = createApi({
         params: {
           keyword: params.keyword,
           category: params.category,
+          page: params.page,
           "ratings[gte]": params.ratings,
           "price[gte]": params.min,
           "price[lte]": params.max,

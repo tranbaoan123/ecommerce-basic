@@ -3,9 +3,12 @@ import { useGetProductsQuery } from "../api/productApi";
 import Loader from "../components/layouts/Loader";
 import ProductItem from "../components/product/ProductItem";
 import Filters from "../components/layouts/Filters";
+import Pagination from "../components/layouts/Pagination";
+import { useState } from "react";
 
 const Home = () => {
   const [searchParams] = useSearchParams();
+  const [page, setPage] = useState(1);
   const keyword = searchParams.get("keyword") || "";
   const min = searchParams.get("min");
   const max = searchParams.get("max");
@@ -16,8 +19,11 @@ const Home = () => {
   max !== null && (params.max = max);
   category !== null && (params.category = category);
   ratings !== null && (params.ratings = ratings);
+  params.page = page;
 
   const { data, isLoading } = useGetProductsQuery(params);
+  console.log(params);
+
   if (isLoading) <Loader />;
   const columnSize = keyword ? 4 : 3;
   return (
@@ -48,6 +54,7 @@ const Home = () => {
                 />
               ))}
             </div>
+            <Pagination records={data?.records} page={page} setPage={setPage} />
           </section>
         </div>
       </div>
